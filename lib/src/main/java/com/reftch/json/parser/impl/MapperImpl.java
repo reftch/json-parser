@@ -1,6 +1,6 @@
 package com.reftch.json.parser.impl;
 
-import com.reftch.json.parser.JsonMapperException;
+import com.reftch.json.parser.MapperException;
 import com.reftch.json.parser.Mapper;
 
 public class MapperImpl<T> implements Mapper<T>  {
@@ -15,12 +15,12 @@ public class MapperImpl<T> implements Mapper<T>  {
     }
 
     @Override
-    public String toJson(T object) throws JsonMapperException {
+    public String toJson(T object) throws MapperException {
         return serializer.toJson(object);
     }
 
     @Override
-    public T toObject(String json) throws JsonMapperException {
+    public T toObject(String json) throws MapperException {
         return deserializer.toObject(json, clazz);
     }
 }

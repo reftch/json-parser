@@ -1,6 +1,6 @@
 package com.reftch.json.parser;
 
-public interface Deserializer<T> {
+public sealed interface Deserializer<T> permits Mapper {
     /**
      * Converts a JSON string back to an object of the specified class
      *
@@ -8,7 +8,7 @@ public interface Deserializer<T> {
      * @param clazz the class of the object to create
      * @param <T>   the type of the object to create
      * @return an instance of clazz populated with data from json
-     * @throws JsonMapperException if deserialization fails
+     * @throws MapperException if deserialization fails
      */
-    T toObject(String json) throws JsonMapperException;
+    T toObject(String json) throws MapperException;
 }

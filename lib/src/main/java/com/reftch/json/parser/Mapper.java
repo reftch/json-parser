@@ -8,6 +8,6 @@ package com.reftch.json.parser;
  * 
  * @param <T> the type of object that this mapper can serialize and deserialize
  */
-public interface Mapper<T> extends Serializer<T>, Deserializer<T>  {
+public non-sealed interface Mapper<T> extends Serializer<T>, Deserializer<T> {
 
 }

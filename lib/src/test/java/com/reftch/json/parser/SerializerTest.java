@@ -6,11 +6,9 @@ import org.junit.jupiter.api.Test;
 
 public class SerializerTest<T> {
 
-    // private JsonMapper mapper = new JsonMapper();
-
     @Test
     @DisplayName("Should return empty {} for Object")
-    void shouldReturnEmptyObject() throws JsonMapperException {
+    void shouldReturnEmptyObject() throws MapperException {
         var mapper = MapperFactory.createMapper(Object.class);
         // Given
         Object object = new Object();
@@ -23,7 +21,7 @@ public class SerializerTest<T> {
 
     @Test
     @DisplayName("Should correctly map String fields")
-    void shouldMapStringFields() throws JsonMapperException {
+    void shouldMapStringFields() throws MapperException {
         // Given
         record Person(String name, String surname) {
         }
@@ -38,7 +36,7 @@ public class SerializerTest<T> {
 
     @Test
     @DisplayName("Should correctly map Integer fields")
-    void shouldMapIntegerFields() throws JsonMapperException {
+    void shouldMapIntegerFields() throws MapperException {
         // Given
         record Person(String name, String surname, int age) {
         }
@@ -53,7 +51,7 @@ public class SerializerTest<T> {
 
     @Test
     @DisplayName("Should correctly map Primitive fields")
-    void shouldMapPrmitiveFields() throws JsonMapperException {
+    void shouldMapPrmitiveFields() throws MapperException {
         // Given
         record Primitive(
                 byte b,

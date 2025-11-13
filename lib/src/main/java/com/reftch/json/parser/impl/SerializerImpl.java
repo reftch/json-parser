@@ -3,11 +3,11 @@ package com.reftch.json.parser.impl;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
-import com.reftch.json.parser.JsonMapperException;
+import com.reftch.json.parser.MapperException;
 
 public class SerializerImpl<T> {
 
-    String toJson(T object) throws JsonMapperException {
+    String toJson(T object) throws MapperException {
         if (object == null) {
             return "{}";
         }

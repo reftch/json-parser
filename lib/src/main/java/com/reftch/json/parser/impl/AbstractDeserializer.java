@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.reftch.json.parser.JsonMapperException;
+import com.reftch.json.parser.MapperException;
 
 abstract class AbstractDeserializer<T> {
 
@@ -107,7 +107,7 @@ abstract class AbstractDeserializer<T> {
         return fields.toArray(new String[0]);
     }
 
-    protected Object convertValue(String valueStr, Class<?> targetType) throws JsonMapperException {
+    protected Object convertValue(String valueStr, Class<?> targetType) throws MapperException {
         if (valueStr.equals("null")) {
             return null;
         }
