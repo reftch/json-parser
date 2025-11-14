@@ -28,7 +28,7 @@ public class DeserializerImpl<T> extends AbstractDeserializer<T>  {
             var constructor = findRecordConstructor(recordClass);
 
             // Parse JSON to extract field values
-            var fieldValues = parseRecordFieldValues(json);
+            var fieldValues = parseFieldValues(json);
 
             // Get parameter types and values
             Class<?>[] paramTypes = constructor.getParameterTypes();
@@ -53,7 +53,7 @@ public class DeserializerImpl<T> extends AbstractDeserializer<T>  {
             T object = clazz.getDeclaredConstructor().newInstance();
 
             // Parse JSON to extract field values
-            var fieldValues = parseRecordFieldValues(json);
+            var fieldValues = parseFieldValues(json);
             for (var entry : fieldValues.entrySet()) {
                 var field = clazz.getDeclaredField(entry.getKey());
                 if (field != null) {

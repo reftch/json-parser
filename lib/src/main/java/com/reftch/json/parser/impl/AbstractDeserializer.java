@@ -33,7 +33,7 @@ abstract class AbstractDeserializer<T> {
         }
     }
 
-    protected Map<String, String> parseRecordFieldValues(String json) {
+    protected Map<String, String> parseFieldValues(String json) {
         Map<String, String> fieldValues = new HashMap<>();
 
         if (json.isEmpty() || !json.startsWith("{") || !json.endsWith("}")) {
@@ -41,13 +41,13 @@ abstract class AbstractDeserializer<T> {
         }
 
         // Remove outer braces
-        String content = json.substring(1, json.length() - 1).trim();
+        var content = json.substring(1, json.length() - 1).trim();
         if (content.isEmpty()) {
             return fieldValues;
         }
 
         // Split by commas, but be careful with nested objects
-        String[] pairs = splitJsonFields(json);
+        var pairs = splitJsonFields(json);
 
         for (String pair : pairs) {
             pair = pair.trim();
@@ -56,11 +56,11 @@ abstract class AbstractDeserializer<T> {
 
             int colonIndex = pair.indexOf(':');
             if (colonIndex > 0) {
-                String key = pair.substring(0, colonIndex).trim();
+                var key = pair.substring(0, colonIndex).trim();
                 // Remove quotes from key
                 key = key.replaceAll("^\"|\"$", "");
 
-                String valueStr = pair.substring(colonIndex + 1).trim();
+                var valueStr = pair.substring(colonIndex + 1).trim();
                 fieldValues.put(key, valueStr);
             }
         }
@@ -76,35 +76,40 @@ abstract class AbstractDeserializer<T> {
         }
 
         List<String> fields = new ArrayList<>();
-        int start = 0;
-        int braceCount = 0;
-        int bracketCount = 0;
-        boolean inQuotes = false;
+        var start = 0;
+        var braceCount = 0;
+        var bracketCount = 0;
+        var inQuotes = false;
 
         for (int i = 0; i < json.length(); i++) {
-            char c = json.charAt(i);
+            var c = json.charAt(i);
+
+            // Handle quote toggling
             if (c == '"' && (i == 0 || json.charAt(i - 1) != '\\')) {
                 inQuotes = !inQuotes;
             }
+
             if (!inQuotes) {
-                if (c == '{') {
-                    braceCount++;
-                } else if (c == '}') {
-                    braceCount--;
-                } else if (c == '[') {
-                    bracketCount++;
-                } else if (c == ']') {
-                    bracketCount--;
-                } else if (c == ',' && braceCount == 0 && bracketCount == 0) {
-                    fields.add(json.substring(start, i).trim());
-                    start = i + 1;
+                switch (c) {
+                    case '{' -> braceCount++;
+                    case '}' -> braceCount--;
+                    case '[' -> bracketCount++;
+                    case ']' -> bracketCount--;
+                    case ',' -> {
+                        if (braceCount == 0 && bracketCount == 0) {
+                            fields.add(json.substring(start, i).trim());
+                            start = i + 1;
+                        }
+                    }
                 }
             }
         }
+
         if (start < json.length()) {
             fields.add(json.substring(start).trim());
         }
-        return fields.toArray(new String[0]);
+
+        return fields.toArray(String[]::new);
     }
 
     protected Object convertValue(String valueStr, Class<?> targetType) throws MapperException {
@@ -118,28 +123,21 @@ abstract class AbstractDeserializer<T> {
             valueStr = unescapeJsonString(valueStr);
         }
 
-        if (targetType == String.class) {
-            return valueStr;
-        } else if (targetType == int.class || targetType == Integer.class) {
-            return Integer.parseInt(valueStr);
-        } else if (targetType == long.class || targetType == Long.class) {
-            return Long.parseLong(valueStr);
-        } else if (targetType == double.class || targetType == Double.class) {
-            return Double.parseDouble(valueStr);
-        } else if (targetType == float.class || targetType == Float.class) {
-            return Float.parseFloat(valueStr);
-        } else if (targetType == boolean.class || targetType == Boolean.class) {
-            return Boolean.parseBoolean(valueStr);
-        } else if (targetType == short.class || targetType == Short.class) {
-            return Short.parseShort(valueStr);
-        } else if (targetType == byte.class || targetType == Byte.class) {
-            return Byte.parseByte(valueStr);
-        } else if (targetType == char.class || targetType == Character.class) {
-            return valueStr.charAt(0);
-        }
-
-        // For complex objects, you might want to parse recursively
-        return valueStr;
+        return switch (targetType) {
+            case Class<?> t when t == String.class -> valueStr;
+            case Class<?> t when t == int.class || t == Integer.class -> Integer.parseInt(valueStr);
+            case Class<?> t when t == long.class || t == Long.class -> Long.parseLong(valueStr);
+            case Class<?> t when t == double.class || t == Double.class -> Double.parseDouble(valueStr);
+            case Class<?> t when t == float.class || t == Float.class -> Float.parseFloat(valueStr);
+            case Class<?> t when t == boolean.class || t == Boolean.class -> Boolean.parseBoolean(valueStr);
+            case Class<?> t when t == short.class || t == Short.class -> Short.parseShort(valueStr);
+            case Class<?> t when t == byte.class || t == Byte.class -> Byte.parseByte(valueStr);
+            case Class<?> t when t == char.class || t == Character.class -> valueStr.charAt(0);
+            default -> {
+                // For complex objects, you might want to parse recursively
+                yield valueStr;
+            }
+        };
     }
 
     private String unescapeJsonString(String str) {

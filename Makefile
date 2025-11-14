@@ -1,6 +1,6 @@
 .PHONY: test clean
 
-test: clean
+test:
 	./gradlew test
 
 clean:
