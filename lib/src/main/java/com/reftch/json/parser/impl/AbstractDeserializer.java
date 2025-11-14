@@ -5,7 +5,6 @@ import java.lang.reflect.RecordComponent;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import com.reftch.json.parser.MapperException;
@@ -34,7 +33,7 @@ abstract class AbstractDeserializer<T> {
     }
 
     protected Map<String, String> parseFieldValues(String json) {
-        Map<String, String> fieldValues = new HashMap<>();
+        var fieldValues = new HashMap<String, String>();
 
         if (json.isEmpty() || !json.startsWith("{") || !json.endsWith("}")) {
             return fieldValues;
@@ -56,7 +55,8 @@ abstract class AbstractDeserializer<T> {
 
             int colonIndex = pair.indexOf(':');
             if (colonIndex > 0) {
-                var key = pair.substring(0, colonIndex).trim();
+                // trim whitespaces
+                var key = pair.substring(0, colonIndex).replaceAll("\\s+", "");
                 // Remove quotes from key
                 key = key.replaceAll("^\"|\"$", "");
 
@@ -75,7 +75,7 @@ abstract class AbstractDeserializer<T> {
             json = json.substring(1, json.length() - 1);
         }
 
-        List<String> fields = new ArrayList<>();
+        var fields = new ArrayList<>();
         var start = 0;
         var braceCount = 0;
         var bracketCount = 0;
@@ -149,5 +149,4 @@ abstract class AbstractDeserializer<T> {
                 .replace("\\r", "\r")
                 .replace("\\t", "\t");
     }
-
 }

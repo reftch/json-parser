@@ -46,6 +46,24 @@ public class DeserializerTest {
         Assertions.assertEquals(expected.surname, actual.surname);
     }
 
+    @Test
+    @DisplayName("Should correctly map json with space to class object")
+    void shouldJsonWithSpaceToPersonObject() throws Exception {
+        // Given JSON string
+        var json = "{\"name  \":\"John\",\"  surname \":\"Smith\"}";
+
+        var mapper = MapperFactory.createMapper(PersonObject.class);
+
+        // When
+        var actual = mapper.toObject(json);
+        // Then
+        var expected = new PersonObject();
+        expected.name = "John";
+        expected.surname = "Smith";
+        Assertions.assertEquals(expected.name, actual.name);
+        Assertions.assertEquals(expected.surname, actual.surname);
+    }
+
     public static class TestObject {
         byte b;
         short s;
