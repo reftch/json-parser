@@ -1,10 +1,14 @@
 package com.reftch.json.parser.impl;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.RecordComponent;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import com.reftch.json.parser.MapperException;
@@ -117,6 +121,11 @@ abstract class AbstractDeserializer<T> {
             return null;
         }
 
+        // Handle arrays
+        if (valueStr.startsWith("[") && valueStr.endsWith("]")) {
+            return convertArray(valueStr, targetType);
+        }
+
         // Remove surrounding quotes if present
         if (valueStr.startsWith("\"") && valueStr.endsWith("\"")) {
             valueStr = valueStr.substring(1, valueStr.length() - 1);
@@ -138,6 +147,72 @@ abstract class AbstractDeserializer<T> {
                 yield valueStr;
             }
         };
+    }
+
+    private Object convertArray(String arrayStr, Class<?> targetType) throws MapperException {
+        Class<?> componentType = targetType.getComponentType();
+        String[] elements = parseArrayElements(arrayStr);
+
+        // Create array of the appropriate type
+        Object result = Array.newInstance(componentType, elements.length);
+
+        // Populate the array with converted values
+        for (int i = 0; i < elements.length; i++) {
+            Object convertedValue = convertValue(elements[i], componentType);
+            Array.set(result, i, convertedValue);
+        }
+
+        return result;
+    }
+
+    private String[] parseArrayElements(String arrayStr) {
+        arrayStr = arrayStr.trim();
+        if (arrayStr.startsWith("[") && arrayStr.endsWith("]")) {
+            arrayStr = arrayStr.substring(1, arrayStr.length() - 1).trim();
+        }
+
+        if (arrayStr.isEmpty()) {
+            return new String[0];
+        }
+
+        List<String> elements = new ArrayList<>();
+        int start = 0;
+        int bracketCount = 0;
+        boolean inQuotes = false;
+
+        for (int i = 0; i < arrayStr.length(); i++) {
+            char c = arrayStr.charAt(i);
+
+            if (c == '"' && (i == 0 || arrayStr.charAt(i - 1) != '\\')) {
+                inQuotes = !inQuotes;
+            }
+
+            if (!inQuotes) {
+                switch (c) {
+                    case '[' -> bracketCount++;
+                    case ']' -> bracketCount--;
+                }
+            }
+
+            if (c == ',' && bracketCount == 0) {
+                elements.add(arrayStr.substring(start, i).trim());
+                start = i + 1;
+            }
+        }
+
+        elements.add(arrayStr.substring(start).trim());
+        return elements.toArray(String[]::new);
+    }
+
+    protected List<Object> parseToList(String arrayStr, Class<?> clazz) throws MapperException {
+        var elements = parseArrayElements(arrayStr);
+        var list = new ArrayList<>();
+
+        for (String element : elements) {
+            list.add(convertValue(element, clazz)); // fallback to string for now
+        }
+
+        return list;
     }
 
     private String unescapeJsonString(String str) {

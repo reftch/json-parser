@@ -1,11 +1,13 @@
 package com.reftch.json.parser.impl;
 
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.RecordComponent;
+import java.util.List;
 
 import com.reftch.json.parser.MapperException;
 
-public class DeserializerImpl<T> extends AbstractDeserializer<T>  {
+public class DeserializerImpl<T> extends AbstractDeserializer<T> {
 
     T toObject(String json, Class<T> clazz) throws MapperException {
         if (clazz == null) {
@@ -59,13 +61,22 @@ public class DeserializerImpl<T> extends AbstractDeserializer<T>  {
                 if (field != null) {
                     field.setAccessible(true);
                     var valueStr = fieldValues.get(field.getName());
-                    field.set(object, convertValue(valueStr, field.getType()));
+                    if (List.class.isAssignableFrom(field.getType())) {
+                        ParameterizedType parameterizedType = (ParameterizedType) field.getGenericType();
+                        Class<?> listClass = (Class<?>) parameterizedType.getActualTypeArguments()[0];
+                        var value = parseToList(valueStr, listClass);
+                        field.set(object, value);
+                    } else {
+                        var value = convertValue(valueStr, field.getType());
+                        field.set(object, value);
+                    }
+
                     field.setAccessible(false);
                 }
             }
             return object;
-        } catch (IllegalAccessException | InstantiationException | IllegalArgumentException
-                | InvocationTargetException | NoSuchMethodException | NoSuchFieldException e) {
+        } catch (Exception e) {
+            // e.printStackTrace();
             throw new MapperException(e.getLocalizedMessage());
         }
     }
