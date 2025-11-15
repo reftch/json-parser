@@ -1,4 +1,4 @@
-.PHONY: test clean
+.PHONY: test clean build
 
 test:
 	./gradlew test

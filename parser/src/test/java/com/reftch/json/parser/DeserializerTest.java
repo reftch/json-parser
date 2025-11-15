@@ -417,4 +417,21 @@ public class DeserializerTest {
         Assertions.assertEquals(expected.arr.get(2), actual.arr.get(2));
     }
 
+    @Test
+    @DisplayName("Should correctly map json to class object with null object")
+    void shouldJsonToObject14() throws Exception {
+        // Given JSON string
+        var json = "{\"i\":1}";
+
+        var mapper = MapperFactory.createMapper(Object13.class);
+
+        // When
+        var actual = mapper.toObject(json);
+        // Then
+        var expected = new Object13();
+        expected.i = 1;
+        Assertions.assertEquals(expected.i, actual.i);
+        Assertions.assertNull(actual.arr);
+    }
+
 }
